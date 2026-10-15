@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>我是誰 - 圖片抽籤</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@500;700;900&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Noto Sans TC', sans-serif;
+            background-color: #1c2e4a; /* 深藍色背景 */
+            margin: 0;
+            overflow: hidden; /* 防止滾動條 */
+        }
+        
+        /* 定義精靈球 SVG 樣式 */
+        .pokeball {
+            position: absolute;
+            width: 40px;
+            height: 40px;
+            z-index: 20;
+            filter: drop-shadow(0px 2px 4px rgba(0,0,0,0.5));
+        }
+
+        /* 讓佔位圖片有淡入效果 */
+        .fade-in {
+            animation: fadeIn 0.3s ease-in-out forwards;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: scale(0.95); }
+            to { opacity: 1; transform: scale(1); }
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col items-center justify-center relative">
+
+
+    <!-- 主體內容區塊 -->
+    <div class="flex flex-col lg:flex-row items-center justify-center gap-16 lg:gap-32 w-full max-w-6xl px-6 py-10">
+        
+        <!-- 左側：圖片顯示框 -->
+        <div class="relative w-[300px] h-[300px] md:w-[400px] md:h-[400px]">
+            <!-- 淺藍色背景與白色邊框 -->
+            <div class="absolute inset-0 bg-[#3eb1f0] border-[6px] border-white shadow-2xl"></div>
+
+            <!-- 左上精靈球 -->
+            <svg class="pokeball -top-5 -left-5" viewBox="0 0 100 100">
+                <circle cx="50" cy="50" r="48" fill="white" stroke="#222" stroke-width="4"/>
+                <path d="M 2 50 A 48 48 0 0 1 98 50 Z" fill="#ee1515" stroke="#222" stroke-width="4"/>
+                <line x1="2" y1="50" x2="98" y2="50" stroke="#222" stroke-width="6"/>
+                <circle cx="50" cy="50" r="16" fill="white" stroke="#222" stroke-width="5"/>
+                <circle cx="50" cy="50" r="8" fill="white" stroke="#222" stroke-width="2"/>
+            </svg>
+            <!-- 右上精靈球 -->
+            <svg class="pokeball -top-5 -right-5 transform rotate-90" viewBox="0 0 100 100">
+                <circle cx="50" cy="50" r="48" fill="white" stroke="#222" stroke-width="4"/>
+                <path d="M 2 50 A 48 48 0 0 1 98 50 Z" fill="#ee1515" stroke="#222" stroke-width="4"/>
+                <line x1="2" y1="50" x2="98" y2="50" stroke="#222" stroke-width="6"/>
+                <circle cx="50" cy="50" r="16" fill="white" stroke="#222" stroke-width="5"/>
+                <circle cx="50" cy="50" r="8" fill="white" stroke="#222" stroke-width="2"/>
+            </svg>
+            <!-- 左下精靈球 -->
+            <svg class="pokeball -bottom-5 -left-5 transform -rotate-90" viewBox="0 0 100 100">
+                <circle cx="50" cy="50" r="48" fill="white" stroke="#222" stroke-width="4"/>
+                <path d="M 2 50 A 48 48 0 0 1 98 50 Z" fill="#ee1515" stroke="#222" stroke-width="4"/>
+                <line x1="2" y1="50" x2="98" y2="50" stroke="#222" stroke-width="6"/>
+                <circle cx="50" cy="50" r="16" fill="white" stroke="#222" stroke-width="5"/>
+                <circle cx="50" cy="50" r="8" fill="white" stroke="#222" stroke-width="2"/>
+            </svg>
+            <!-- 右下精靈球 -->
+            <svg class="pokeball -bottom-5 -right-5 transform rotate-180" viewBox="0 0 100 100">
+                <circle cx="50" cy="50" r="48" fill="white" stroke="#222" stroke-width="4"/>
+                <path d="M 2 50 A 48 48 0 0 1 98 50 Z" fill="#ee1515" stroke="#222" stroke-width="4"/>
+                <line x1="2" y1="50" x2="98" y2="50" stroke="#222" stroke-width="6"/>
+                <circle cx="50" cy="50" r="16" fill="white" stroke="#222" stroke-width="5"/>
+                <circle cx="50" cy="50" r="8" fill="white" stroke="#222" stroke-width="2"/>
+            </svg>
+
+            <!-- 抽中的圖片 (預設隱藏) -->
+            <div class="absolute inset-0 p-[6px] z-10">
+                <img id="result-image" src="" alt="抽中結果" class="w-full h-full object-cover hidden bg-white">
+            </div>
+        </div>
+
+        <!-- 右側：文字與控制按鈕 -->
+        <div class="flex flex-col items-center justify-center gap-8">
+            
+
+
+            <!-- 主要按鈕：我是誰 -->
+            <button id="btn-main" class="bg-[#ffcc00] hover:bg-[#ffe052] text-[#6b4c00] font-black text-5xl md:text-6xl py-4 px-16 rounded-2xl border-4 border-[#e6a800] shadow-[0_10px_0_#b38000] active:shadow-[0_0px_0_#b38000] active:translate-y-[10px] transition-all cursor-pointer">
+                我是誰
+            </button>
+
+            <!-- 卡池剩餘內容 -->
+            <div class="bg-white/10 border-2 border-white/40 rounded-xl px-6 py-4 w-full max-w-sm">
+                <div class="flex justify-between items-center text-white font-bold text-xl mb-2">
+                    <span>卡池剩餘</span>
+                    <span id="pool-total" class="text-[#ffcc00]"></span>
+                </div>
+                <ul id="pool-list" class="text-white text-lg font-medium space-y-1"></ul>
+            </div>
+
+            <!-- 重置按鈕 -->
+            <button id="btn-reset-all" class="bg-white/20 hover:bg-white/30 text-white font-bold text-xl py-2 px-8 rounded-xl border-2 border-white/60 transition-all cursor-pointer">
+                重置卡池
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // 定義 4 張佔位圖片資料 (包含圖片網址與對應的文字)
+        // 圖片請放在與本 HTML 同一層的 images 資料夾內
+        const MAX_DRAWS = 5; // 每張圖片最多可被抽中的次數
+        const items = [
+            { id: 1, url: 'images/1.jpg', name: '小火龍' },
+            { id: 2, url: 'images/4.jpg', name: '卡比獸' },
+            { id: 3, url: 'images/2.jpg', name: '百變怪' },
+            { id: 4, url: 'images/3.jpg', name: '妙蛙種子' }
+        ];
+
+        // 讀取 / 儲存已抽次數 (存在瀏覽器，重新整理也不會歸零)
+        const STORAGE_KEY = 'drawCounts';
+        let counts = {};
+        try { counts = JSON.parse(localStorage.getItem(STORAGE_KEY)) || {}; } catch (e) {}
+        function saveCounts() {
+            try { localStorage.setItem(STORAGE_KEY, JSON.stringify(counts)); } catch (e) {}
+        }
+
+        // 取得 DOM 元素
+        const resultImage = document.getElementById('result-image');
+        const btnMain = document.getElementById('btn-main');
+        const btnResetAll = document.getElementById('btn-reset-all');
+        const poolList = document.getElementById('pool-list');
+        const poolTotal = document.getElementById('pool-total');
+
+        // 更新卡池剩餘顯示
+        function renderPool() {
+            let total = 0;
+            poolList.innerHTML = '';
+            items.forEach(it => {
+                const left = MAX_DRAWS - (counts[it.id] || 0);
+                total += left;
+                const li = document.createElement('li');
+                li.className = 'flex justify-between' + (left === 0 ? ' opacity-40 line-through' : '');
+                const nameSpan = document.createElement('span');
+                nameSpan.textContent = it.name;
+                const leftSpan = document.createElement('span');
+                leftSpan.textContent = left + ' / ' + MAX_DRAWS;
+                li.append(nameSpan, leftSpan);
+                poolList.appendChild(li);
+            });
+            poolTotal.textContent = total + ' / ' + (items.length * MAX_DRAWS);
+
+            // 抽完時停用按鈕，否則啟用
+            const empty = total === 0;
+            btnMain.disabled = empty;
+            btnMain.classList.toggle('opacity-50', empty);
+            btnMain.classList.toggle('cursor-not-allowed', empty);
+        }
+
+        // 重置整個卡池
+        function resetAll() {
+            if (!confirm('確定要重置卡池嗎？所有抽籤次數會歸零。')) return;
+            counts = {};
+            saveCounts();
+            renderPool();   // 先更新卡池與按鈕狀態
+            resetLots();    // 再清除圖片
+        }
+
+        // 抽籤邏輯函式
+        function drawLots() {
+            // 只從還沒達到上限的圖片中抽
+            const available = items.filter(it => (counts[it.id] || 0) < MAX_DRAWS);
+            if (available.length === 0) {
+                renderPool();
+                return;
+            }
+
+            // 移除動畫 class 以便重新觸發
+            resultImage.classList.remove('fade-in');
+            
+            // 隨機選擇一個項目
+            const selectedItem = available[Math.floor(Math.random() * available.length)];
+            counts[selectedItem.id] = (counts[selectedItem.id] || 0) + 1;
+            saveCounts();
+            renderPool();
+            console.log(selectedItem.name, '已抽', counts[selectedItem.id], '/', MAX_DRAWS);
+
+            // 稍微延遲以確保動畫能重新觸發
+            setTimeout(() => {
+                // 更新圖片與文字
+                resultImage.src = encodeURI(selectedItem.url);
+                resultImage.classList.remove('hidden');
+                resultImage.classList.add('fade-in');
+                
+                
+            }, 50);
+        }
+
+        // 重新開始邏輯函式
+        function resetLots() {
+            resultImage.classList.add('hidden');
+            resultImage.classList.remove('fade-in');
+            resultImage.src = '';
+        }
+
+        // 綁定事件監聽器
+        btnMain.addEventListener('click', drawLots);
+        btnResetAll.addEventListener('click', resetAll);
+        renderPool(); // 載入時顯示目前卡池
+
+        // 圖片載入失敗時提示
+        resultImage.addEventListener('error', () => {
+            console.error('圖片載入失敗，請確認 images 資料夾與檔名：', resultImage.src);
+        });
+    </script>
+</body>
+</html>
